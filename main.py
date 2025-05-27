@@ -2,6 +2,96 @@ import cv2
 import numpy as np
 import math
 
+def get_type(i,j):
+    row,col=UGB_array.shape
+    if i>=row: return 0
+    temp_array=np.zeros(4)
+    if(UGB_array[i][j]==True) : temp_array[0]=1
+    if(j==0):
+        if(UGB_array[i][total_arc_per_circle-1]==True) :temp_array[1]=1
+        if i+1<total_circles : 
+            if(UGB_array[i+1][total_arc_per_circle-1]==True) : temp_array[2]=1 
+    else:
+        if(UGB_array[i][j-1]==True): temp_array[1]=1
+        if(i+1<total_circles):
+            if(UGB_array[i+1][j-1]==True): temp_array[2]=1
+    if i+1<total_circles and UGB_array[i+1][j]==True:
+        temp_array[3]=1
+    
+    occ_count=0
+    for i in range(4):
+        if temp_array[i]==1:
+            occ_count+=1
+    
+    if occ_count==1 : return 1
+    if occ_count==4 or occ_count==0 : return 0
+    if occ_count==3 : return -1
+    if (temp_array[0]==1 and temp_array[2]==1) or (temp_array[1]==1 and temp_array[3]==1): return -1
+    return 2
+
+
+def trace_cover(i,j,visited):
+    myfile = open('outputs/data.txt', 'w')
+    myfile.write(f'{i} {j}\n')
+    direction=0
+    start_i=i
+    start_j=j
+    next_i=i
+    next_j=(j+1)%total_arc_per_circle
+    myfile.write(f"{next_i} {next_j}\n")
+    while not(start_i==next_i and start_j==next_j):
+        if(next_i<0):
+            for i in range(next_j+1,total_arc_per_circle):
+                if UGB_array[0,i]==True:
+                    next_i=0
+                    next_j=i
+                    direction=3
+                    break
+            for i in range(total_arc_per_circle):
+                visited[0,i]=True
+            pass
+        else:
+            
+            v_type=get_type(next_i,next_j)
+            print(f"type of {next_i,next_j}  {v_type}")
+            if next_i>=total_circles or next_j>=total_arc_per_circle:break
+            visited[next_i,next_j]=True
+            if v_type==2:v_type=0
+            direction= (direction+v_type)%4
+            if direction==-1: direction=3
+            if direction==0:next_j=(next_j+1)%total_arc_per_circle
+            elif direction==1: next_i=next_i-1
+            elif direction==2: 
+                if next_j==0: next_j=total_arc_per_circle-1
+                else :next_j-=1
+            else :
+                next_i+=1
+        
+        myfile.write(f"{next_i} {next_j}\n")
+    
+    myfile.write(f"{-2} {-2}")
+    
+    myfile.close()     
+    print()
+    print()
+
+def make_outer_cover():
+    visited = np.full((total_circles, total_arc_per_circle), False, dtype=bool)
+    print("i am in make_outer_cover function")
+    for i in range(total_circles-1,-1,-1):
+        myflag=False
+        for j in range(total_arc_per_circle):
+            if not visited[i][j]:
+                visited[i][j]=True
+                occ_type=get_type(i,j)
+                if occ_type==1 or occ_type==2:
+                    trace_cover(i,j,visited)
+                    myflag=True
+                    break
+        if myflag==True :break
+
+
+
 
 def ugb_occupancy_marker():
     if center_x-10>=0 and center_x-10<image_width and center_y-10>=0 and center_y-10<image_height and binary_image[center_x-10,center_y-10]==0:
@@ -34,7 +124,7 @@ def ugb_occupancy_marker():
                 for x in range(x_min-10,x_max-10+1):
                     if x>=0 and y>=0 and x<image_width and y<image_height:
                         distance=np.sqrt((x - (center_x-10))**2 + (y - (center_y-10))**2)
-                        curr_angle = np.arctan2(y - center_y, x - center_x)
+                        curr_angle = np.arctan2(y - (center_y-10), x - (center_x-10))
                         curr_angle =curr_angle+ 2 * np.pi if curr_angle<0 else curr_angle # Normalize angles to [0, 2π)
                         curr_angle=np.degrees(curr_angle)
                         if 0<=math.ceil(distance) and math.floor(distance)<=radius_step:
@@ -75,7 +165,7 @@ def ugb_occupancy_marker():
                 for x in range(x_min-10,x_max-10+1):
                     if x>=0 and y>=0 and x<image_width and y<image_height:
                         distance=np.sqrt((x - (center_x-10))**2 + (y - (center_y-10))**2)
-                        curr_angle = np.arctan2(y - center_y, x - center_x)
+                        curr_angle = np.arctan2(y - (center_y-10), x - (center_x-10))
                         curr_angle =curr_angle+ 2 * np.pi if curr_angle<0 else curr_angle # Normalize angles to [0, 2π)
                         curr_angle=np.degrees(curr_angle)
                         if prev_radius<=math.ceil(distance) and math.floor(distance)<=curr_radius:
@@ -99,19 +189,19 @@ def create_svg_file(filename, n, r_step):
         extra_padding_x=total_circles*radius_step-(image_width//2+10)
         extra_padding_y=total_circles*radius_step-(image_height//2+10)
         print(f"extar_padding = {extra_padding_x,extra_padding_y}")
-        f.write(f'<svg xmlns="http://www.w3.org/2000/svg" width="{image_height+20+2*extra_padding_x}" height="{image_width+20+2*extra_padding_y}">\n')
-        f.write(f'<image href="image1.png" x="{10+extra_padding_x}" y="{10+extra_padding_y}" width="{image_width}" height="{image_height}" />')
+        f.write(f'<svg xmlns="http://www.w3.org/2000/svg" width="{image_height+20+2*extra_padding_x}" height="{image_width+40+2*extra_padding_y}">\n')
+        f.write(f'<image href="../{file_path}" x="{10+extra_padding_x}" y="{10+extra_padding_y}" width="{image_width}" height="{image_height}" />')
         # Add concentric circles
         for i in range(1, n + 1):
             r = i * r_step
-            f.write(f'  <circle cx="{center_x+extra_padding_x}" cy="{center_y+extra_padding_y}" r="{r}" stroke="red" fill="none" />\n')
+            f.write(f'  <circle cx="{center_x+extra_padding_x}" cy="{center_y+extra_padding_y}" r="{r}" stroke="green" fill="none" stroke-width="0.5" />\n')
         
         for i in range(total_arc_per_circle):
             curr_angle=i*angle_step
             curr_angle_radian=math.radians(curr_angle)
             x=center_x+extra_padding_x+total_circles*radius_step*math.cos(curr_angle_radian)
             y=center_y+extra_padding_y+total_circles*radius_step*math.sin(curr_angle_radian)
-            f.write(f'<line x1="{center_x+extra_padding_x}" y1="{center_y+extra_padding_y}" x2="{x}" y2="{y}" stroke="black" stroke-width="2"/>')
+            f.write(f'<line x1="{center_x+extra_padding_x}" y1="{center_y+extra_padding_y}" x2="{x}" y2="{y}" stroke="green" stroke-width="0.5"/>')
             
         # f.write(f'  <circle cx="{100}" cy="{10}" r="{2}" stroke="red" fill="pink" />\n')
         # f.write(f'<line x1="{269}" y1="{280}" x2="{269}" y2="{367}" stroke="green" stroke-width="2"/>')
@@ -130,24 +220,70 @@ def create_svg_file(filename, n, r_step):
         # f.write(f'<line x1="{269}" y1="{367}" x2="{269}" y2="{280}" stroke="blue" stroke-width="2"/>')
 
         # SVG Footer
-        for i in range(total_circles):
-            curr_radius=i*radius_step+radius_step
-            for j in range(total_arc_per_circle):
-                curr_angle=j*angle_step
-                curr_angle_radian=math.radians(curr_angle)
-                x=center_x+extra_padding_x+curr_radius*math.cos(curr_angle_radian)
-                y=center_y+extra_padding_y+curr_radius*math.sin(curr_angle_radian)
-                my_color='green'
-                if(UGB_array[i,j]): my_color='blue'
-                f.write(f'  <circle cx="{x}" cy="{y}" r="{2}" stroke="{my_color}" fill="{my_color}" />\n')
+        myfile = open('outputs/data.txt', 'r')
+        while True:
+            line=myfile.readline()
+            if not line:
+                break
+            x_str, y_str = line.strip().split()
+            first_x, first_y = int(x_str), int(y_str)
+            first_radius=first_x*radius_step+radius_step
+            first_angle=first_y*angle_step
+            first_angle_radian=math.radians(first_angle)
+            fx=center_x+extra_padding_x+first_radius*math.cos(first_angle_radian)
+            fy=center_y+extra_padding_y+first_radius*math.sin(first_angle_radian)
+
+            line=myfile.readline()
+            if not line:
+                break
+            x_str, y_str = line.strip().split()
+            second_x, second_y = int(x_str), int(y_str)
+            second_radius=second_x*radius_step+radius_step
+            second_angle=second_y*angle_step
+            second_angle_radian=math.radians(second_angle)
+            sx=center_x+extra_padding_x+second_radius*math.cos(second_angle_radian)
+            sy=center_y+extra_padding_y+second_radius*math.sin(second_angle_radian)
+
+            while True:
+                if first_x!=second_x:
+                    f.write(f'<line x1="{fx}" y1="{fy}" x2="{sx}" y2="{sy}" stroke="red" stroke-width="2"/>')
+                    pass
+                else :
+                    outwards=1
+                    if first_y>second_y: outwards=0
+                    if first_y==total_arc_per_circle-1 and second_y==0: outwards=1
+                    if first_y==0 and second_y==total_arc_per_circle-1: outwards=0
+                    f.write(f'<path d="M{fx} {fy} A{second_radius} {second_radius} 0 0 {outwards} {sx} {sy}" stroke="red" stroke-width="2" fill="none" />')
+                fx=sx
+                fy=sy
+                first_x=second_x
+                first_y=second_y
+                line=myfile.readline()
+                if not line:
+                    break
+                x_str, y_str = line.strip().split()
+                second_x, second_y = int(x_str), int(y_str)
+                if second_x==-2 and second_y==-2 : break
+                second_radius=second_x*radius_step+radius_step
+                second_angle=second_y*angle_step
+                second_angle_radian=math.radians(second_angle)
+                sx=center_x+extra_padding_x+second_radius*math.cos(second_angle_radian)
+                sy=center_y+extra_padding_y+second_radius*math.sin(second_angle_radian)
+                
+
+            
+        myfile.close()
+
+
         f.write('</svg>\n')
 
-    print(f"SVG file '{filename}' created with {n} concentric circles.")
 
 if __name__=="__main__":
     #take inputs
-    # file_path=input("Enter image path: ")
-    file_path='inputs/image1.png'
+
+    global file_path
+    file_path=input("Enter image path: ")
+    
     global radius_step,angle_step
     radius_step=int(input("Enter the radius difference: "))
     angle_step=int(input("Enter angle steps: "))
@@ -191,6 +327,7 @@ if __name__=="__main__":
     print(total_arc_per_circle)
     
     ugb_occupancy_marker()
+    make_outer_cover()
     create_svg_file('outputs/output.svg',total_circles,radius_step)
     print(UGB_array)
 
