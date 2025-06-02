@@ -23,15 +23,22 @@ def get_type(i,j):
         if temp_array[i]==1:
             occ_count+=1
     
-    if occ_count==1 : return 1
+    if occ_count==1 : 
+        if temp_array[0]==1: return 5
+        return 1
     if occ_count==4 or occ_count==0 : return 0
-    if occ_count==3 : return -1
+    if occ_count==3 : 
+        if temp_array[3]==0  : return 3
+        else : return -1
+        
     if (temp_array[0]==1 and temp_array[2]==1) or (temp_array[1]==1 and temp_array[3]==1): return -1
-    return 2
+    # if temp_array[0]==1 and temp_array[1]==1: return 2
+
+    return 0
 
 
-def trace_cover(i,j,visited):
-    myfile = open('outputs/data.txt', 'w')
+def trace_cover(i,j,visited,occ_type):
+    
     myfile.write(f'{i} {j}\n')
     direction=0
     start_i=i
@@ -39,16 +46,31 @@ def trace_cover(i,j,visited):
     next_i=i
     next_j=(j+1)%total_arc_per_circle
     myfile.write(f"{next_i} {next_j}\n")
+    
+    
     while not(start_i==next_i and start_j==next_j):
+        
         if(next_i<0):
-            for i in range(next_j+1,total_arc_per_circle):
-                if UGB_array[0,i]==True:
-                    next_i=0
-                    next_j=i
-                    direction=3
+            temp_j=next_j
+            temp_j-=1
+            if temp_j==-1: temp_j=total_arc_per_circle-1
+            while True:
+                if UGB_array[0,temp_j]==False:
                     break
-            for i in range(total_arc_per_circle):
-                visited[0,i]=True
+                visited[0,temp_j]=True
+                temp_j-=1
+                if temp_j==-1: temp_j=total_arc_per_circle-1
+            next_i=0
+            next_j=temp_j+1
+            if next_j==total_arc_per_circle: next_j=0
+            visited[0,next_j]=True
+            direction=3
+            # for i in range(next_j+1,total_arc_per_circle):
+            #     if UGB_array[0,i]==True:
+            #         next_i=0
+            #         next_j=i
+            #         direction=3
+            #         break
             pass
         else:
             
@@ -56,7 +78,9 @@ def trace_cover(i,j,visited):
             print(f"type of {next_i,next_j}  {v_type}")
             if next_i>=total_circles or next_j>=total_arc_per_circle:break
             visited[next_i,next_j]=True
+            if v_type==3: v_type=-1
             if v_type==2:v_type=0
+            if v_type==5: v_type=1
             direction= (direction+v_type)%4
             if direction==-1: direction=3
             if direction==0:next_j=(next_j+1)%total_arc_per_circle
@@ -69,28 +93,37 @@ def trace_cover(i,j,visited):
         
         myfile.write(f"{next_i} {next_j}\n")
     
-    myfile.write(f"{-2} {-2}")
+    myfile.write(f"{-2} {-2}\n")
     
-    myfile.close()     
+       
     print()
     print()
 
 def make_outer_cover():
+    global myfile
+    myfile = open('outputs/data.txt', 'w')
+
     visited = np.full((total_circles, total_arc_per_circle), False, dtype=bool)
     print("i am in make_outer_cover function")
+    count=0
     for i in range(total_circles-1,-1,-1):
         myflag=False
         for j in range(total_arc_per_circle):
             if not visited[i][j]:
                 visited[i][j]=True
                 occ_type=get_type(i,j)
-                if occ_type==1 or occ_type==2:
-                    trace_cover(i,j,visited)
-                    myflag=True
-                    break
-        if myflag==True :break
+                if occ_type==5 or occ_type==3:
+                    # count+=1
+                    # if count==20:
+                    #     print(f"last index {i} {j}")
+                    #     print(f"its occ type = {occ_type}")
+                    #     myflag=True
+                    #     break
+                    trace_cover(i,j,visited,occ_type)
+                    
+        # if myflag==True :break
 
-
+    myfile.close()  
 
 
 def ugb_occupancy_marker():
