@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+import helper_functions.get_center as get_center
 
 def get_type(i,j):
     row,col=UGB_array.shape
@@ -334,10 +335,13 @@ if __name__=="__main__":
     global binary_image
     binary_image = (gray_image > 127).astype(np.uint8)  # 1 for >127, 0 otherwise
 
+    
    
     global center_x,center_y,max_radius
-    center_x=(image_width//2)+10
-    center_y=(image_height//2)+10
+    center_x,center_y=get_center.get_center_of_object(binary_image)
+
+    center_x+=10
+    center_y+=10
     a=math.ceil(np.sqrt((center_x)*(center_x)+(center_y)*(center_y)))
     b=math.ceil(np.sqrt((center_x-image_width-20)*(center_x-image_width-20)+(center_y)*(center_y)))
     c=math.ceil(np.sqrt((center_x)*(center_x)+(center_y-image_height-20)*(center_y-image_height-20)))
@@ -352,8 +356,11 @@ if __name__=="__main__":
     total_circles=math.ceil(max_radius/radius_step)
     total_arc_per_circle=math.ceil(360/angle_step)
 
+
+
     global UGB_array
     UGB_array = np.full((total_circles, total_arc_per_circle), False, dtype=bool)
+
 
 
     print(total_circles)
