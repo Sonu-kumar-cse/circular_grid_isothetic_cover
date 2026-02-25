@@ -5,7 +5,7 @@ import os
 from pipeline import run_pipeline
 
 st.set_page_config(layout="wide")
-st.title("Circular Cover Analyzer")
+st.title("Mandala - MTP")
 
 # ================= SESSION STATE INIT =================
 if "results_ready" not in st.session_state:

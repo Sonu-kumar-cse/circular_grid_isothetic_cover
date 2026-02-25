@@ -1,11 +1,11 @@
-# Circular Cover Analyzer
+# Mandala-MTP
 
 An interactive Streamlit-based application for geometric analysis of image primitives.
-The system processes an input image, computes circular covers and similarity relationships among detected components, and visualizes the results as downloadable SVG files.
+The system processes an input image (Mandala), computes circular covers and similarity relationships among detected components (primitives), and visualizes the results as downloadable SVG files.
 
 ---
 
-## 🚀 Overview
+## Overview
 
 This project implements a complete pipeline for:
 
@@ -21,7 +21,7 @@ The application allows users to upload an image, configure parameters, run the a
 
 ---
 
-## 🧩 System Architecture
+## System Architecture
 
 ### 🔹 Frontend (Streamlit UI)
 
@@ -33,7 +33,7 @@ Responsible for:
 * SVG preview
 * File download
 
-### 🔹 Backend (Python Pipeline)
+### Backend (Python Pipeline)
 
 Responsible for:
 
@@ -46,7 +46,7 @@ Responsible for:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 project-root/
@@ -70,7 +70,7 @@ project-root/
 
 ## ⚙️ Installation
 
-### 1️⃣ Clone the repository
+### 1️ Clone the repository
 
 ```bash
 git clone <your-repo-url>
@@ -79,7 +79,7 @@ cd <repo-folder>
 
 ---
 
-### 2️⃣ Create a virtual environment (recommended)
+### 2️ Create a virtual environment (recommended)
 
 ```bash
 python -m venv venv
@@ -89,7 +89,7 @@ venv\Scripts\activate         # Windows
 
 ---
 
-### 3️⃣ Install dependencies
+### 3️ Install dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -97,7 +97,7 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Running the Application
+## Running the Application
 
 Launch the Streamlit interface:
 
@@ -113,7 +113,7 @@ http://localhost:8501
 
 ---
 
-## 🧪 How to Use
+## How to Use
 
 1. Upload an input image
 2. Enter:
@@ -127,7 +127,7 @@ http://localhost:8501
 
 ---
 
-## 📤 Output Files
+## Output Files
 
 The pipeline generates three SVG visualizations:
 
@@ -139,18 +139,18 @@ All outputs are stored in the `outputs/` directory and available for download vi
 
 ---
 
-## 💻 Requirements
+## Requirements
 
 * Python ≥ 3.9 (tested on Python 3.10)
 * Works on:
 
-  * Linux ✅
-  * macOS ✅
-  * Windows ✅
+  * Linux 
+  * macOS 
+  * Windows 
 
 ---
 
-## ⚠️ Notes on Performance
+## Notes on Performance
 
 * The pipeline uses multiprocessing for speed.
 * Runtime depends on image size and number of detected components.
@@ -158,27 +158,7 @@ All outputs are stored in the `outputs/` directory and available for download vi
 
 ---
 
-## 🌐 Deployment
 
-This app can be deployed for free using:
-
-* Streamlit Community Cloud (recommended)
-* Render
-* HuggingFace Spaces
-
----
-
-## 🔮 Future Improvements
-
-Planned enhancements include:
-
-* Progress bar for long computations
-* Batch image processing
-* Zoom & pan SVG viewer
-* Background job queue
-* Full SVG asset embedding for portability
-
----
 
 ## 👨‍💻 Author
 
@@ -186,7 +166,3 @@ Planned enhancements include:
 Roll No: 24CS60R22
 
 ---
-
-## 📜 License
-
-This project is intended for academic and research purposes.
