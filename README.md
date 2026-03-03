@@ -102,7 +102,7 @@ pip install -r requirements.txt
 Launch the Streamlit interface:
 
 ```bash
-streamlit run app.py
+streamlit run ui.py
 ```
 
 Then open the local URL shown in the terminal (usually):

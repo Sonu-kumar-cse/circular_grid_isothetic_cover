@@ -41,7 +41,69 @@ def display_svg_responsive(svg_content: str, height: int = 500):
     """
     st.components.v1.html(html, height=height + 20)
 
+import uuid
 
+def display_zoomable_svg(svg_content: str, height: int = 600):
+    """
+    Display SVG with zoom + pan controls.
+    """
+
+    unique_id = str(uuid.uuid4()).replace("-", "")
+
+    html = f"""
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
+    <div style="border:1px solid #444;
+                border-radius:8px;
+                background:black;
+                padding:10px;">
+
+        <div style="margin-bottom:8px;">
+            <button onclick="zoomIn_{unique_id}()">🔍 Zoom In</button>
+            <button onclick="zoomOut_{unique_id}()">🔎 Zoom Out</button>
+            <button onclick="resetZoom_{unique_id}()">⟳ Reset</button>
+        </div>
+
+        <div id="container_{unique_id}"
+             style="width:100%; height:{height}px; background:black;">
+            {svg_content}
+        </div>
+    </div>
+
+    <script>
+        var panZoomInstance_{unique_id};
+
+        setTimeout(function() {{
+            var svg = document.querySelector("#container_{unique_id} svg");
+
+            panZoomInstance_{unique_id} = svgPanZoom(svg, {{
+                zoomEnabled: true,
+                controlIconsEnabled: false,
+                fit: true,
+                center: true,
+                minZoom: 0.5,
+                maxZoom: 20,
+                zoomScaleSensitivity: 0.4
+            }});
+        }}, 200);
+
+        function zoomIn_{unique_id}() {{
+            panZoomInstance_{unique_id}.zoomIn();
+        }}
+
+        function zoomOut_{unique_id}() {{
+            panZoomInstance_{unique_id}.zoomOut();
+        }}
+
+        function resetZoom_{unique_id}() {{
+            panZoomInstance_{unique_id}.resetZoom();
+            panZoomInstance_{unique_id}.center();
+            panZoomInstance_{unique_id}.fit();
+        }}
+    </script>
+    """
+
+    st.components.v1.html(html, height=height + 80)
 
 import glob
 import base64
@@ -134,8 +196,7 @@ if st.session_state.results_ready:
 
         st.subheader(title)
 
-        # ✅ responsive preview (FIXES SCALING)
-        display_svg_responsive(svg_data, height=500)
+        display_zoomable_svg(svg_data, height=600)
 
         # ✅ persistent download button (FIXES DISAPPEARING)
         st.download_button(
